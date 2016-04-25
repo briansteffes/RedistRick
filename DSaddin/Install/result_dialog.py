@@ -42,7 +42,7 @@ class RedistrictingResults(tk.Frame):
         self.diretions = tk.Label(self, justify=tk.LEFT,
                                   text=(
                                     "The results of the redistricting plan "
-                                    "you designed are summarized here.\n"
+                                    "you designed can be summarized here.\n"
                                     "Export will allow you to save a new "
                                     "shapefile with polygons\nof these "
                                     "boundaries.\nReport lets you export "
@@ -62,7 +62,7 @@ class RedistrictingResults(tk.Frame):
                                       command=self.report, justify=tk.RIGHT)
         self.exportButton = tk.Button(self.actionsFrame, text='Export',
                                       command=self.export, justify=tk.RIGHT)
-        self.quitButton = tk.Button(self.actionsFrame, text='Finish',
+        self.quitButton = tk.Button(self.actionsFrame, text='Save',
                                     command=self.quit, justify=tk.RIGHT)
 
         self.reportButton.grid(column=0, row=0, sticky=tk.E+tk.W)
@@ -75,8 +75,9 @@ class RedistrictingResults(tk.Frame):
         self.fieldLabel.grid(column=1, row=1, sticky=tk.E)
 
         # TODO read from district_fc instead
-        fieldList = ['Several','Strings','Here']
         # fieldList = arcpy.ListFields(self.district_fc)
+        # print 'fieldList', fieldList
+        fieldList = ['Several','Strings','Here']
         self.selectedField = tk.StringVar()
         self.selectedField.set(None)
 
@@ -98,7 +99,7 @@ class RedistrictingResults(tk.Frame):
     def report(self):
         output_file = tkFileDialog.asksaveasfilename()
         stats = DistrictStats(self.district_fc)
-        stats.csv(self.selectedField, output_file)
+        stats.csv([self.selectedField], output_file)
         tkMessageBox.showinfo("You changed stuff.", 'You clicked Report.')
 
 if __name__ == "__main__":

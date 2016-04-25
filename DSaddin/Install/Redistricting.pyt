@@ -60,15 +60,13 @@ class Add_Integer_Field_Tool(object):
             datatype= ["GPFeatureLayer", "GPString"],
             parameterType="Required",
             direction="Input")
-        
+
         # Read the directory of infc from temp.txt file
-        f = open(r'E:\redistricting_data\RedistRick-development\DSaddin\Install\temp.txt','r')
+        f = open(r'temp.txt','r')
         param0.value = f.readline()                         # Not sure if '\n' appended will cause a problem
-        
-      
 
         # Name of Field to be Added
-        # Ideally the datatype would be 'Field' and the parameter would be dependent to 
+        # Ideally the datatype would be 'Field' and the parameter would be dependent to
         #   param0. If param0 does not have the appropriate attribute then the tool will add one automatically
         param1 = arcpy.Parameter(
             displayName="District ID Field",
@@ -76,11 +74,11 @@ class Add_Integer_Field_Tool(object):
             datatype="Field",
             parameterType="Optional",                       # if not provided then execute block add "Dist_ID" Field of type Long
             direction="Input")
-        
+
         param1.parameterDependencies = [param0.name]
         param1.filter.list = ["FID","LONG","DOUBLE"]
-        param1.value = 'Dist_ID'                               # Default to Identify no existing field, If user does not change then create new field
-        
+        param1.value = 'N/A'                               # Default to Identify no existing field, If user does not change then create new field
+
         # District Number
         param2 = arcpy.Parameter(
             displayName="Field Integer Value",
@@ -88,10 +86,11 @@ class Add_Integer_Field_Tool(object):
             datatype="GPLong",
             parameterType="Required",
             direction="Input")
-            
-        # allow only normal numbers 
+
+        # allow only normal numbers
         param2.filter.type = "Range"
         param2.filter.list = [1,100]                        # Hard coded upper bound, but should be derived from the number of polygons in param0.
+        param2.value = 0
 
         # list of parameters for tool
         parameters = [param0, param1, param2]
@@ -106,7 +105,9 @@ class Add_Integer_Field_Tool(object):
         infc = parameters[0].valueAsText
         field_name = parameters[1].valueAsText
         field_value = int(parameters[2].valueAsText)
+        self.run(infc, field_name, field_value)
 
+    def run(self, infc, field_name, field_value):
         # -----------------------------------------------------------------
         # Frequently Used Variables
         infc_dir = os.path.split(arcpy.Describe(infc).catalogPath)[0]
@@ -118,7 +119,7 @@ class Add_Integer_Field_Tool(object):
 
         # Add field if the parameter was left blank
         # Add Field to the Feature Class
-        
+
         if field_name == 'N/A':
             try:
                 field_name = 'Dist_ID'
@@ -126,8 +127,6 @@ class Add_Integer_Field_Tool(object):
             except arcpy.ExecuteError:
                 print arcpy.GetMessages(2)
 
-
-        
         # Populate the Field
         mxd = arcpy.mapping.MapDocument("CURRENT")
         layers = arcpy.mapping.ListLayers(mxd)
@@ -136,12 +135,12 @@ class Add_Integer_Field_Tool(object):
             fids = arcpy.Describe(layer).FIDSet
             if len(fids) > 0:
                 selected_lyr.append(layer)
-        
-        # Only deal with the first selected layer in array if user has made 
+
+        # Only deal with the first selected layer in array if user has made
         # Selections across multiple layers
-        
+
         # TODO: Error message for selecting from multiple .lyr files.
-            
+
         desc = arcpy.Describe(selected_lyr[0])
         fids = [int(s) for s in (desc.FIDSet.split("; "))]
 
@@ -151,10 +150,7 @@ class Add_Integer_Field_Tool(object):
             if int(row.getValue("FID")) in fids:
                 row.setValue(field_name, field_value)
                 rows.updateRow(row)
-             
-          
 
-        
         # Prevent locks on the layer
         del row
         del rows
