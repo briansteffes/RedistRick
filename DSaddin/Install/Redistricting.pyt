@@ -289,6 +289,9 @@ class Build_Districts_Tool(object):
     def execute(self, parameters, messages):
         infc = parameters[0].valueAsText
         outfc = parameters[2].valueAsText
+        self.run(infc, outfc)
+
+    def run(self, infc, outfc):
         env.workspace = os.path.split(infc)[0]
 
         n = numDistricts(infc)

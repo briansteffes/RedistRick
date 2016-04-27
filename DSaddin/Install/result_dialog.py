@@ -7,8 +7,14 @@ import tkMessageBox
 import tkFileDialog
 import arcpy
 from district_stats import DistrictStats
+from district_stats import Summary
 from arcpy import env
 import pythonaddins
+import imp
+imp.load_source('RedistrictingToolbox',
+                os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             'Redistricting.pyt'))
+from RedistrictingToolbox import *
 
 
 class RedistrictingResults(tk.Frame):
@@ -17,9 +23,6 @@ class RedistrictingResults(tk.Frame):
         self.master.title('Redistricting Results')
         self.grid()
         self.configureGrid()
-        # if tkMessageBox.askquestion("Redistricting Plan",
-        #                             "Continue defining districts?") is False:
-        #     self.quit()
         self.district_fc = sys.argv[1]
         self.createWidgets()
 
@@ -75,32 +78,37 @@ class RedistrictingResults(tk.Frame):
         self.fieldLabel.grid(column=1, row=1, sticky=tk.E)
 
         # TODO read from district_fc instead
-        # fieldList = arcpy.ListFields(self.district_fc)
-        # print 'fieldList', fieldList
-        fieldList = ['Several','Strings','Here']
+        self.fieldList = []
+        for field in arcpy.ListFields(self.district_fc):
+            self.fieldList.append(field.name)
         self.selectedField = tk.StringVar()
         self.selectedField.set(None)
 
         self.fieldSelector = tk.OptionMenu(self,
                                            self.selectedField,
-                                           *fieldList,
+                                           *self.fieldList,
                                            command=self.fieldChange)
         self.fieldSelector.grid(column=2, row=1, sticky=tk.E+tk.W)
 
     def fieldChange(self, value):
-        tkMessageBox.showinfo("You changed stuff.", "Now you say " + value)
+        self.selectedField = value
+        stats = Summary(self.district_fc, value)
+        message = ("{0}\nMean:{1}\nMedian:{2}\nStd. Dev.:{3}").format(
+                                                                      value,
+                                                                      stats.mean(),
+                                                                      stats.median(),
+                                                                      stats.stdev())
+        tkMessageBox.showinfo("Field Summary", message)
 
     def export(self):
-        pythonaddins.GPToolDialog(os.path.join(
-                                  os.path.dirname(os.path.abspath(__file__)),
-                                  "Redistricting.pyt"),
-                                  "Build_Districts_Tool")
+        output_file = tkFileDialog.asksaveasfilename()
+        export_dist = Build_Districts_Tool()
+        export_dist.run(self.district_fc, output_file)
 
     def report(self):
         output_file = tkFileDialog.asksaveasfilename()
         stats = DistrictStats(self.district_fc)
-        stats.csv([self.selectedField], output_file)
-        tkMessageBox.showinfo("You changed stuff.", 'You clicked Report.')
+        stats.csv(self.fieldList, output_file)
 
 if __name__ == "__main__":
     app = RedistrictingResults()

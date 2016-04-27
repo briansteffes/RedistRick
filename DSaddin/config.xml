@@ -13,7 +13,8 @@
   <AddIn language="PYTHON" library="DSaddin_addin.py" namespace="DSaddin_addin">
     <ArcMap>
       <Commands>
-        <Button caption="District" category="DSaddin" class="DistrictButon" id="DSaddin_district.button" image="" message="District" tip="District"><Help heading="" /></Button>
+        <Button caption="Add District" category="DSaddin" class="DistrictButon" id="DSaddin_district.button" image="" message="Adds the currently selected features to a new district in the current plan." tip="Add District"></Button>
+        <Button caption="Finish Plan" category="DSaddin" class="SummaryButon" id="DSaddin_summary.button" image="" message="Show the results of the current plan and provide options to export the data." tip="Finish Plan"></Button>
       </Commands>
       <Extensions>
       </Extensions>
@@ -21,6 +22,7 @@
           <Toolbar caption="Redistricting Tools" category="DSaddin" id="DSaddin.toolbar" showInitially="true">
             <Items>
               <Button refID="DSaddin_district.button" />
+              <Button refID="DSaddin_summary.button" />
             </Items>
           </Toolbar>
       </Toolbars>

@@ -277,9 +277,9 @@ def _stdev_calc(data, mean, population=False):
     """
     var = None
     if population:
-        var = pvariance(data, mu)
+        var = pvariance(data, mean)
     else:
-        var = variance(data, xbar)
+        var = variance(data, mean)
 
     try:
         return var.sqrt()
@@ -592,7 +592,7 @@ def stdev(data, xbar=None):
     1.0810874155219827
 
     """
-    _stdev_calc(data, xbar)
+    return _stdev_calc(data, xbar)
 
 
 def pstdev(data, mu=None):
@@ -604,4 +604,4 @@ def pstdev(data, mu=None):
     0.986893273527251
 
     """
-    _stdev_calc(data, mu, population=True)
+    return _stdev_calc(data, mu, population=True)
